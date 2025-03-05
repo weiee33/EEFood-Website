@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EEFood - 点餐系统</title>
+    <style>
+        :root {
+            --primary-color: #6EC3F2;  /* 浅蓝色 */
+            --secondary-color: #FF6B9D;  /* 蜜桃粉 */
+            --accent-color: #FFD166;  /* 活力黄 */
+            --background-color: #E6F4F9;  /* 浅蓝背景 */
+            --text-color: #2D4059;
+        }
+
+        /* 优化后的Logo样式 */
+        .logo-container {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(110, 195, 242, 0.3);
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: rotate(8deg) scale(1.05);
+        }
+
+        body {
+            font-family: 'Comic Neue', cursive;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(180deg, var(--primary-color), #8BD0F5);
+            padding: 120px 20px 20px;
+            height: 100vh;
+            position: fixed;
+            box-shadow: 2px 0 15px rgba(110, 195, 242, 0.2);
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 1.8rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .sidebar button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 12px 0;
+            border: none;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            font-size: 1.1rem;
+            cursor: pointer;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .sidebar button:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateX(10px);
+            box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .main-content {
+            margin-left: 270px;
+            padding: 40px;
+            width: calc(100% - 270px);
+        }
+
+        .food-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            padding: 30px 0;
+        }
+
+        .food-item {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 6px 15px rgba(110, 195, 242, 0.15);
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+        }
+
+        .food-item:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 25px rgba(110, 195, 242, 0.25);
+        }
+
+        .food-item::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -1;
+        }
+
+        .food-item:hover::before {
+            opacity: 0.1;
+        }
+
+        .food-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-bottom: 3px solid var(--background-color);
+        }
+
+        .food-item-content {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .food-item h3 {
+            margin: 15px 0;
+            color: var(--secondary-color);
+            font-size: 1.4rem;
+        }
+
+        .food-item p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .food-item button {
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            cursor: pointer;
+            margin-top: 15px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .food-item button::before {
+            content: "❤️";
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));
+        }
+
+        .food-item button:hover {
+            background: #FF548C;
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(255,107,157,0.3);
+        }
+
+        .cart-btn {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            background: var(--secondary-color);
+            color: white;
+            padding: 22px;
+            font-size: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(255,107,157,0.3);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .cart-btn:hover {
+            transform: scale(1.15) rotate(15deg);
+            background: #FF548C;
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--accent-color);
+            color: var(--text-color);
+            border-radius: 50%;
+            padding: 6px 12px;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .cart-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            border-radius: 25px;
+            box-shadow: 0 15px 40px rgba(110,195,242,0.25);
+            z-index: 1000;
+            padding: 25px;
+            flex-direction: column;
+        }
+
+        .cart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+        .close-btn {
+            cursor: pointer;
+            background: var(--primary-color);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: 0 4px 8px rgba(110, 195, 242, 0.3);
+        }
+
+        .close-btn:hover {
+            background: var(--secondary-color);
+            transform: rotate(90deg) scale(1.1);
+        }
+
+        .close-btn::before {
+            content: "✕";
+            font-size: 24px;
+        }
+        #cart-items {
+            flex: 1;
+            overflow-y: auto;
+            max-height: 60vh;
+            padding-right: 15px;
+        }
+
+        #cart-items::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #cart-items::-webkit-scrollbar-track {
+            background: rgba(110,195,242,0.1);
+            border-radius: 4px;
+        }
+
+        #cart-items::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 4px;
+        }
+
+        .cart-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .cart-item img {
+            width: 70px;
+            height: 70px;
+            border-radius: 15px;
+            margin-right: 20px;
+            object-fit: cover;
+        }
+
+        .cart-item-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .cart-item-controls button {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .cart-item-controls button:hover {
+            background: var(--secondary-color);
+            transform: scale(1.1);
+        }
+
+        .checkout-btn {
+            margin-top: 25px;
+            padding: 18px;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.3s ease;
+        }
+
+        .checkout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(110,195,242,0.3);
+        }
+
+        @media (max-width: 768px) {
+            .logo-container {
+                position: absolute;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+                padding-top: 140px;
+            }
+
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+                padding: 30px 20px;
+            }
+
+            .cart-btn {
+                bottom: 20px;
+                right: 20px;
+                padding: 18px;
+                font-size: 24px;
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Logo容器 -->
+    <img src="logo.png.webp" alt="EEFood Logo" class="logo" onclick="window.location.reload()">
+
+    <div class="container">
+        <div class="sidebar">
+            <h2>EEFood Restaurant</h2>
+            <button data-category="all">🍱 全部美食</button>
+            <button data-category="chinese">🥟 中式美味</button>
+            <button data-category="western">🍔 西式风味</button>
+            <button data-category="drinks">🍹 特调饮品</button>
+            <button data-category="snacks">🍡 休闲小食</button>
+        </div>
+
+        <div class="main-content">
+            <h1 style="color: var(--secondary-color);">Lets Pick Your Food</h1>
+            <div class="food-list" id="food-container"></div>
+        </div>
+    </div>
+
+    <!-- 购物车按钮 -->
+    <button class="cart-btn" id="cart-btn">
+        🛍️
+        <span class="cart-badge" id="cart-badge">0</span>
+    </button>
+
+    <!-- 购物车模态框 -->
+    <div class="cart-modal" id="cart-modal">
+        <div class="cart-header">
+            <h2 style="color: var(--secondary-color);">💝 宝贝的甜蜜清单 (💋 <span id="total-kisses">0</span>)</h2>
+            <span class="close-btn" onclick="closeCart()">&times;</span>
+        </div>
+        <div id="cart-items"></div>
+        <button class="checkout-btn" onclick="checkout()">💌 給亲亲了才做嘿嘿</button>
+    </div>
+
+    <script>
+        let foodData = [
+            { 
+                name: "云朵舒芙蕾", 
+                category: "western", 
+                img: "logo.png.webp", 
+                kisses: 5,
+                desc: "空气感十足的梦幻甜点"
+            },
+            { 
+                name: "樱花奶盖茶", 
+                category: "drinks", 
+                img: "https://source.unsplash.com/random/800x600?milktea", 
+                kisses: 4,
+                desc: "春日限定樱花风味"
+            },
+            { 
+                name: "小熊松饼", 
+                category: "snacks", 
+                img: "https://source.unsplash.com/random/800x600?pancake", 
+                kisses: 3,
+                desc: "萌萌哒小熊造型松饼"
+            },
+            { 
+                name: "彩虹饺子", 
+                category: "chinese", 
+                img: "https://source.unsplash.com/random/800x600?dumpling", 
+                kisses: 6,
+                desc: "七种颜色的惊喜内馅"
+            },
+            { 
+                name: "星空冰淇淋", 
+                category: "snacks", 
+                img: "https://source.unsplash.com/random/800x600?icecream", 
+                kisses: 2,
+                desc: "银河般璀璨的梦幻冰品"
+            }
+        ];
+    
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        updateCartBadge();
+    
+        // 初始化事件监听
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.sidebar button').forEach(button => {
+                button.addEventListener('click', () => {
+                    showCategory(button.dataset.category);
+                });
+            });
+            
+            document.getElementById('cart-btn').addEventListener('click', openCart);
+            showCategory('all'); // 初始化显示全部食物
+        });
+    
+        function showCategory(category) {
+            const container = document.getElementById("food-container");
+            container.innerHTML = foodData
+                .filter(item => category === "all" || item.category === category)
+                .map(item => `
+                    <div class="food-item">
+                        <img src="${item.img}" alt="${item.name}">
+                        <div class="food-item-content">
+                            <h3>${item.name}</h3>
+                            <p>${item.desc}</p>
+                            <p>💋 ${item.kisses} 亲亲</p>
+                            <button data-add="${item.name}">❤️ 加入购物车</button>
+                        </div>
+                    </div>
+                `).join('');
+    
+            // 添加事件监听
+            container.querySelectorAll('[data-add]').forEach(button => {
+                button.addEventListener('click', () => {
+                    const item = foodData.find(f => f.name === button.dataset.add);
+                    addToCart(item);
+                    showToast('宝贝真棒，已添加到购物车！');
+                });
+            });
+        }
+    
+        function addToCart(item) {
+            const existing = cart.find(c => c.name === item.name);
+            if (existing) {
+                existing.quantity++;
+            } else {
+                cart.push({ ...item, quantity: 1 });
+            }
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartBadge();
+        }
+    
+        function updateCartBadge() {
+            const total = cart.reduce((sum, item) => sum + item.quantity, 0);
+            document.getElementById('cart-badge').textContent = total;
+        }
+    
+        function openCart() {
+            const modal = document.getElementById('cart-modal');
+            modal.style.display = 'block';
+            renderCart();
+        }
+    
+        function closeCart() {
+            document.getElementById('cart-modal').style.display = 'none';
+        }
+    
+        function renderCart() {
+            const container = document.getElementById("cart-items");
+            const totalElement = document.getElementById("total-kisses");
+            
+            const itemsHTML = cart.map(item => `
+                <div class="cart-item">
+                    <img src="${item.img}" alt="${item.name}">
+                    <div style="flex-grow: 1;">
+                        <h4>${item.name}</h4>
+                        <p>${item.desc}</p>
+                        <div class="cart-item-controls">
+                            <button onclick="updateQuantity('${item.name}', -1)">-</button>
+                            <span>${item.quantity}</span>
+                            <button onclick="updateQuantity('${item.name}', 1)">+</button>
+                            <span style="color: var(--secondary-color);">💋 ${item.kisses * item.quantity}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+    
+            container.innerHTML = itemsHTML;
+            const total = cart.reduce((sum, item) => sum + (item.kisses * item.quantity), 0);
+            totalElement.textContent = total;
+        }
+    
+        function updateQuantity(name, delta) {
+            const item = cart.find(c => c.name === name);
+            if (item) {
+                item.quantity += delta;
+                if (item.quantity <= 0) {
+                    cart = cart.filter(c => c.name !== name);
+                }
+                localStorage.setItem('cart', JSON.stringify(cart));
+                updateCartBadge();
+                renderCart();
+            }
+        }
+    
+        function checkout() {
+            if (cart.length === 0) {
+                showToast('购物车是空的哦宝贝！');
+                return;
+            }
+            if (confirm(`确认下单？总计需要 ${document.getElementById('total-kisses').textContent} 个亲亲！`)) {
+                localStorage.removeItem('cart');
+                cart = [];
+                updateCartBadge();
+                closeCart();
+                showToast('下单成功！感谢宝贝的亲亲 💖');
+            }
+        }
+    
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.style = `
+                position: fixed;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: var(--secondary-color);
+                color: white;
+                padding: 12px 24px;
+                border-radius: 25px;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+                animation: slideIn 0.3s ease;
+            `;
+
+
+            
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 2000);
+        }
+    
+        // 点击模态框外部关闭
+        window.onclick = function(event) {
+            const modal = document.getElementById('cart-modal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
